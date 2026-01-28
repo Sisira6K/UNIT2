@@ -1,0 +1,161 @@
+"""
+Claude Haiku Solution:
+Fox, Goose, and Grain River Crossing Puzzle Solver
+
+Problem:
+A farmer needs to transport a fox, a goose, and a bag of grain across a river using a boat.
+Constraints:
+- The boat can only hold the farmer and one other item
+- The fox cannot be left alone with the goose (fox will eat the goose)
+- The goose cannot be left alone with the grain (goose will eat the grain)
+- The fox and grain CAN be left alone together
+"""
+
+
+class RiverCrossingPuzzle:
+    """
+    Solves the classic Fox, Goose, and Grain river crossing puzzle.
+    
+    Represents the state of items on each side of the river and provides
+    a method to find and display the solution.
+    """
+    
+    def __init__(self):
+        """Initialize the puzzle with all items on the left side."""
+        self.left_side = {'farmer', 'fox', 'goose', 'grain'}
+        self.right_side = set()
+        self.farmer_location = 'left'
+        self.moves = []
+    
+    def is_safe_state(self, left, right):
+        """
+        Check if a given state is safe (no forbidden combinations).
+        
+        Args:
+            left (set): Items on the left side
+            right (set): Items on the right side
+        
+        Returns:
+            bool: True if the state is safe, False otherwise
+        """
+        # Check left side
+        if 'farmer' not in left:
+            # Farmer is away, check for dangerous combinations
+            if 'fox' in left and 'goose' in left:
+                return False
+            if 'goose' in left and 'grain' in left:
+                return False
+        
+        # Check right side
+        if 'farmer' not in right:
+            # Farmer is away, check for dangerous combinations
+            if 'fox' in right and 'goose' in right:
+                return False
+            if 'goose' in right and 'grain' in right:
+                return False
+        
+        return True
+    
+    def get_solution(self):
+        """
+        Find and return the solution to the puzzle.
+        
+        Returns:
+            list: A list of tuples describing each move (item_moved, from_side, to_side)
+        """
+        # Solution sequence (hardcoded as this is a well-known puzzle)
+        # Note: 'farmer_alone' represents the farmer traveling alone
+        solution = [
+            ('goose', 'left', 'right'),           # Move 1
+            ('farmer_alone', 'right', 'left'),    # Move 2 (return alone)
+            ('fox', 'left', 'right'),             # Move 3
+            ('goose', 'right', 'left'),           # Move 4 (bring goose back)
+            ('grain', 'left', 'right'),           # Move 5
+            ('farmer_alone', 'right', 'left'),    # Move 6 (return alone)
+            ('goose', 'left', 'right'),           # Move 7
+        ]
+        return solution
+    
+    def execute_solution(self):
+        """
+        Execute the solution and track the state changes.
+        
+        Displays each move and the resulting state of both sides.
+        """
+        solution = self.get_solution()
+        
+        print("=" * 70)
+        print("FOX, GOOSE, AND GRAIN RIVER CROSSING SOLUTION")
+        print("=" * 70)
+        print("\nInitial State:")
+        self.display_state()
+        
+        for i, (item, from_side, to_side) in enumerate(solution, 1):
+            # Update state
+            if item == 'farmer_alone':
+                # Farmer travels alone
+                if self.farmer_location == 'left':
+                    self.farmer_location = 'right'
+                    self.left_side.discard('farmer')
+                    self.right_side.add('farmer')
+                else:
+                    self.farmer_location = 'left'
+                    self.right_side.discard('farmer')
+                    self.left_side.add('farmer')
+                print(f"\nMove {i}: Farmer travels ALONE from {from_side.upper()} to {to_side.upper()}")
+            else:
+                # Farmer travels with an item
+                if self.farmer_location == 'left':
+                    self.left_side.discard(item)
+                    self.left_side.discard('farmer')
+                    self.right_side.add(item)
+                    self.right_side.add('farmer')
+                    self.farmer_location = 'right'
+                else:
+                    self.right_side.discard(item)
+                    self.right_side.discard('farmer')
+                    self.left_side.add(item)
+                    self.left_side.add('farmer')
+                    self.farmer_location = 'left'
+                print(f"\nMove {i}: Farmer takes {item.upper()} from {from_side.upper()} to {to_side.upper()}")
+            
+            self.display_state()
+            
+            # Verify state is safe
+            if not self.is_safe_state(self.left_side, self.right_side):
+                print("⚠️  WARNING: Unsafe state detected!")
+        
+        print("\n" + "=" * 70)
+        print("SOLUTION COMPLETE! All items successfully transported.")
+        print("=" * 70)
+    
+    def display_state(self):
+        """Display the current state of both sides of the river."""
+        print(f"\n  LEFT SIDE          |         RIGHT SIDE")
+        print(f"  {self.format_side(self.left_side):20}|  {self.format_side(self.right_side)}")
+        print("  " + "-" * 40)
+    
+    def format_side(self, side):
+        """
+        Format a side's contents for display.
+        
+        Args:
+            side (set): The set of items on a side
+        
+        Returns:
+            str: A formatted string representation of the side
+        """
+        if not side:
+            return "(empty)"
+        items = sorted(side)
+        return ", ".join(items)
+
+
+def main():
+    """Main function to run the puzzle solver."""
+    puzzle = RiverCrossingPuzzle()
+    puzzle.execute_solution()
+
+
+if __name__ == "__main__":
+    main()
